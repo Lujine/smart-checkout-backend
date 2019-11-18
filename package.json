@@ -1,0 +1,23 @@
+{
+  "name": "smart-checkout-backend",
+  "version": "1.0.0",
+  "description": "A smart checkout mobile app to avoid long supermarket lines",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lujine/smart-checkout-backend.git"
+  },
+  "author": "Sad Potatoes",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lujine/smart-checkout-backend/issues"
+  },
+  "homepage": "https://github.com/Lujine/smart-checkout-backend#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
