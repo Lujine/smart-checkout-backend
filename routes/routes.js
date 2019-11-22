@@ -1,6 +1,7 @@
 const models = require('express').Router();
-const user = require('./api/user');
+const store = require('./api/store');
 
-models.use('/user', user);
+models.use('/store', store);
+
 
 module.exports = models;

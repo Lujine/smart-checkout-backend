@@ -15,7 +15,7 @@ module.exports = {
           }).required()
       ).required()
     }
-    return Joi.validate(req, createSchema)
+    return joi.validate(req, createSchema)
   },
 
   updateValidation: req => {
@@ -32,6 +32,6 @@ module.exports = {
             })
         )
       }
-    return Joi.validate(req, updateSchema)
+    return joi.validate(req, updateSchema)
   }
 }
