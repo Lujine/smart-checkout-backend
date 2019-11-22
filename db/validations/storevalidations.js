@@ -10,7 +10,7 @@ module.exports = {
           joi.object().keys({
             name:joi.string().required(),
             price:joi.number().required(),
-            barcode:joi.number().required(),
+            barcode:joi.number().min(100000000000).max(999999999999).required(),
             discount:joi.number()
           }).required()
       ).required()
@@ -27,7 +27,7 @@ module.exports = {
             joi.object().keys({
               name:joi.string(),
               price:joi.number(),
-              barcode:joi.number(),
+              barcode:joi.number().min(100000000000).max(999999999999),
               discount:joi.number()
             })
         )
