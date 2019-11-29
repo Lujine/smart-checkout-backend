@@ -120,3 +120,29 @@ exports.delete = async (req, res) => {
     });
   }
 };
+
+
+exports.allItems = async (req, res) => {
+  try {
+    const storeId = req.params.id;
+    const store = await Store.findById(storeId);
+    if (!store) {
+      return res.status(400).json({
+        status: 'Error',
+        message: 'store not found',
+      });
+    }
+    const items= store.items
+    return res.status(200).json({
+      status: 'Success',
+      data: items,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      status: 'Error',
+      message: error.message,
+    });
+  }
+};
+
+

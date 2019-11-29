@@ -12,4 +12,6 @@ router.put('/:id', controller.update)
 
 router.delete('/:id', controller.delete)
 
+router.get('/:id/items/', controller.allItems)
+
 module.exports = router
