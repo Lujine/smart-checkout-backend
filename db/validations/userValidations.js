@@ -51,4 +51,11 @@ module.exports = {
     };
     return Joi.validate(req, updateSchema);
   },
+  authValidation: (req) => {
+    const authSchema = {
+      email: Joi.string().email(),
+      password: Joi.string().regex(PASSWORD_REGEX),
+    };
+    return Joi.validate(req, authSchema);
+  },
 };
