@@ -1,7 +1,6 @@
-// The admin model
 const mongoose = require('mongoose');
 
-const Schema = { mongoose };
+const { Schema } = mongoose;
 
 const UserSchema = new Schema({
   name: {
@@ -39,15 +38,29 @@ const UserSchema = new Schema({
     required: true,
   },
   shoppingCart: {
-    itemsSelected: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Store',
-    }],
-    totalprice: {
-      type: Number,
-      required: true,
+    type: {
+      store: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Store',
+        require: true,
+      },
+      itemsSelected: {
+        type: [{
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Store.items',
+        }],
+        required: true,
+      },
+      totalPrice: {
+        type: Number,
+        required: true,
+      },
     },
+    // eslint-disable-next-line func-names, object-shorthand
+    required: (function () { return this.isAdmin === false; }),
   },
+
 });
+
 
 module.exports = mongoose.model('User', UserSchema);
