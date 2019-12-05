@@ -1,15 +1,28 @@
-const express = require('express')
-const router = express.Router()
-const controller = require('../controllers/storeControllers.js')
+const express = require('express');
 
-router.get('/', controller.default)
+const router = express.Router();
+const controller = require('../controllers/storeControllers.js');
 
-router.post('/', controller.create)
+// Store CRUDS
+router.get('/', controller.default);
 
-router.get('/:id', controller.read)
+router.post('/', controller.create);
 
-router.put('/:id', controller.update)
+router.get('/:id', controller.read);
 
-router.delete('/:id', controller.delete)
+router.put('/:id', controller.update);
 
-module.exports = router
+router.delete('/:id', controller.delete);
+
+// Items CRUDS
+router.get('/:storeId/items', controller.allItems);
+
+router.get('/:storeId/items/:itemId', controller.getItem);
+
+router.post('/:storeId/items', controller.createItem);
+
+router.put('/:storeId/items/:itemId', controller.updateItem);
+
+router.delete('/:storeId/items/:itemId', controller.deleteItem);
+
+module.exports = router;

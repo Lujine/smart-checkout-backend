@@ -16,7 +16,10 @@ const updateItemSchema = {
 };
 
 module.exports = {
-  createItemSchema,
+  createItemValidation: (req) => {
+    const createSchema = createItemSchema;
+    return joi.validate(req, createSchema);
+  },
   createValidation: (req) => {
     const createSchema = {
       name: joi.string().required(),
@@ -30,7 +33,10 @@ module.exports = {
     };
     return joi.validate(req, createSchema);
   },
-  updateItemSchema,
+  updateItemValidation: (req) => {
+    const createSchema = updateItemSchema;
+    return joi.validate(req, createSchema);
+  },
   updateValidation: (req) => {
     const updateSchema = {
       name: joi.string(),
