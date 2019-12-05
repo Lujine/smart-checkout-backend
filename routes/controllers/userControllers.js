@@ -1,8 +1,8 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../../db/models/User');
 const UserValidation = require('../../db/validations/userValidations');
 const getAge = require('../../utils/helpers');
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
 
 
 exports.getAll = async (req, res) => {
@@ -174,136 +174,453 @@ exports.delete = async (req, res) => {
   }
 };
 
-exports.register= async (req,res)=>{
-  try
-  {
-    const body = req.body
-    if(!body)
-    {
-      return res.status(400).json({
-        status:'error',
-        msg:"body can't be empty"
-      })
-    }
-    body.isAdmin=false
-    body.dateJoined=new Date().toISOString();
-    body.shoppingCart= {totalPrice:0}
-    const valid = UserValidation.createValidation(body)
-    if (valid.error) {
-      return res.status(400).json({
-        status: 'error',
-        message: valid.error.details[0].message,
-      })
-    }
-    const flag= await User.find({email:body.email})
-    if(flag){
-      return res.status(400).json({
-        status:"error",
-        msg:'a user with that email already exists'
-      })
-    }
+exports.getCart = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    const cart = user.shoppingCart;
 
-    const newUser = new User(body) 
-    
-    bcrypt.genSalt(10, (err,salt)=>{
-      if(err) throw err
-      bcrypt.hash(newUser.password,salt,(err,hash)=>{
-        if(err) throw err
-        newUser.password=hash
-        newUser.save()
-        .then(user=>{
-            jwt.sign(
-              {id:user._id},
-              process.env.jwtSecret,
-              {expiresIn:3600},
-              (err,token)=>{
-                if(err) throw err
-                return res.json({
-                  status:'success',
-                  token,
-                  data:user
-                })
-              }
-            )           
-        })
-      })
-    })
-  }
-  catch(err)
-  {
-    console.error(err);
-    return (
-      res.status(400).json({
-        status: 'Error',
-        message: `Error registering user`,
-        error: err,
-    }));
+    if (!cart) {
+      if (user.isAdmin) {
+        return res.status(400).json({
+          status: 'Fail',
+          message: 'Admins do not have carts',
+        });
+      }
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the cart of the user with id ${userId}`,
+      });
+    }
+    return res.status(200).json({
+      status: 'Success',
+      data: cart,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 'Error',
+      message: err.message,
+    });
   }
 };
 
-exports.login = async(req,res)=>{
-  try{
-    const body = req.body
-    if(!body)
-    {
+exports.updateCart = async (req, res) => {
+  const { userId } = req.params;
+  const data = req.body;
+
+  if (!data) {
+    return res.status(400).json({
+      status: 'Error',
+      message: "body can't be empty",
+    });
+  }
+  const validated = UserValidation.updateCartValidation(data);
+  if (validated.error) {
+    return res.status(400).json({
+      status: 'Validation Error',
+      message: validated.error,
+    });
+  }
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(400).json({
-        status:'error',
-        msg:"body can't be empty"
-      })
+        status: 'Error',
+        message: 'No user exists with this id',
+      });
     }
-    const valid = UserValidation.authValidation(body)
+    user.shoppingCart = data;
+    const cart = user.shoppingCart;
+    // eslint-disable-next-line no-unused-expressions
+    cart.isNew;
+    const saved = await user.save();
+    if (saved.error) {
+      return res.status(400).json({
+        status: 'Error',
+        message: 'Error saving to DB',
+      });
+    }
+    return res.status(200).json({
+      status: 'success',
+      message: `New cart with id ${cart.id} created for user with id ${user.id}`,
+      data: cart,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 'Error',
+      message: err,
+    });
+  }
+};
+
+exports.deleteCart = async (req, res) => {
+  const { userId } = req.params;
+  const data = {
+    totalPrice: 0,
+  };
+
+  const validated = UserValidation.createcartValidation(data);
+  if (validated.error) {
+    return res.status(400).json({
+      status: 'Validation Error',
+      message: validated.error,
+    });
+  }
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({
+        status: 'Error',
+        message: 'No user exists with this id',
+      });
+    }
+    user.shoppingCart = data;
+    const cart = user.shoppingCart;
+    // eslint-disable-next-line no-unused-expressions
+    cart.isNew;
+    const saved = await user.save();
+    if (saved.error) {
+      return res.status(400).json({
+        status: 'Error',
+        message: 'Error saving to DB',
+      });
+    }
+    return res.status(200).json({
+      status: 'success',
+      message: `New cart with id ${cart.id} created for user with id ${user.id}`,
+      data: cart,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 'Error',
+      message: err,
+    });
+  }
+};
+
+exports.getAllItemsInCart = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the user with id ${userId}`,
+      });
+    }
+    const cart = user.shoppingCart;
+    if (!cart) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the cart of the user with id ${userId}`,
+      });
+    }
+    const items = cart.itemsSelected;
+    if (!items) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the items of the cart of the user with id ${userId}`,
+      });
+    }
+    return res.status(200).json({
+      status: 'Success',
+      data: items,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 'Error',
+      message: err.message,
+    });
+  }
+};
+
+exports.getItemInCart = async (req, res) => {
+  const { userId, itemId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the user with id ${userId}`,
+      });
+    }
+    const cart = user.shoppingCart;
+    if (!cart) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the cart of the user with id ${userId}`,
+      });
+    }
+    const items = cart.itemsSelected;
+    const item = items.find((selectedItem) => selectedItem.itemId === itemId);
+    return res.status(200).json({
+      status: 'Success',
+      data: item,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 'Error',
+      message: err.message,
+    });
+  }
+};
+
+exports.addItemToCart = async (req, res) => {
+  const { userId } = req.params;
+  const data = req.body;
+
+  if (!data) {
+    return res.status(400).json({
+      status: 'Error',
+      message: "body can't be empty",
+    });
+  }
+  const validated = UserValidation.createCartItemValidation();
+  if (validated.error) {
+    return res.status(400).json({
+      status: 'Validation Error',
+      message: validated.error,
+    });
+  }
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the user with id ${userId}`,
+      });
+    }
+    const cart = user.shoppingCart;
+    if (!cart) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the cart of the user with id ${userId}`,
+      });
+    }
+    const items = cart.itemsSelected;
+    items.splice(0, 0, data);
+    const newItem =  user.shoppingCart.itemsSelected[0];
+    console.log(newItem)
+
+    // eslint-disable-next-line no-unused-expressions
+    newItem.isNew;
+    const saved = await user.save();
+    if (saved.error) {
+      return res.status(400).json({
+        status: 'Error',
+        message: 'Error saving to DB',
+      });
+    }
+
+    return res.status(200).json({
+      status: 'Success',
+      data: items,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 'Error',
+      message: err.message,
+    });
+  }
+};
+
+exports.editItemInCart = async (req, res) => {
+  const { userId, itemId } = req.params;
+  const data = req.body;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the user with id ${userId}`,
+      });
+    }
+    const cart = user.shoppingCart;
+    if (!cart) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the cart of the user with id ${userId}`,
+      });
+    }
+    const items = cart.itemsSelected;
+    const itemIndex = items.findIndex((selectedItem) => selectedItem.itemId === itemId);
+    items[itemIndex] = data;
+    const item = items[itemIndex];
+    // eslint-disable-next-line no-unused-expressions
+    item.isNew;
+    const saved = user.save;
+    if (saved.error) {
+      return res.status(400).json({
+        status: 'Error',
+        message: 'Error saving to DB',
+      });
+    }
+    return res.status(200).json({
+      status: 'Success',
+      data: item,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 'Error',
+      message: err.message,
+    });
+  }
+};
+
+exports.deleteItemFromCart = async (req, res) => {
+  const { userId, itemId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the user with id ${userId}`,
+      });
+    }
+    const cart = user.shoppingCart;
+    if (!cart) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: `Failed to retrieve the cart of the user with id ${userId}`,
+      });
+    }
+    const items = cart.itemsSelected;
+    const itemIndex = items.findIndex((selectedItem) => selectedItem.itemId === itemId);
+    items.splice(itemIndex);
+    return res.status(200).json({
+      status: 'Success',
+      data: items,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 'Error',
+      message: err.message,
+    });
+  }
+};
+
+exports.register = async (req, res) => {
+  try {
+    const { body } = req;
+    if (!body) {
+      return res.status(400).json({
+        status: 'error',
+        msg: "body can't be empty",
+      });
+    }
+    body.isAdmin = false;
+    body.dateJoined = new Date().toISOString();
+    body.shoppingCart = { totalPrice: 0 };
+    const valid = UserValidation.createValidation(body);
     if (valid.error) {
       return res.status(400).json({
         status: 'error',
         message: valid.error.details[0].message,
-      })
+      });
     }
-  
-    User.findOne({email:body.email})
-    .then(user=>{
-        if(!user)
-        {
-          return res.status(400).json({
-            status:"error",
-            msg:'user with that email does not exists'
-          })
-        }
-  
-        //validate password
-        bcrypt.compare(body.password, user.password)
-        .then(match=>{
-          if(!match) return res.status(400).json({
-            status:"error",
-            msg:'wrong password'
-          })
-          jwt.sign(
-            {id:user._id},
-            process.env.jwtSecret,
-            {expiresIn:3600},
-            (err,token)=>{
-              if(err) throw err
-             
-              res.json({
-                status:'success',
-                token,
-                data:user
-              })
-            }
-          )  
-        })
-    })
-    .catch(err=>console.log(err))
-  
-  }catch(err)
-  {
+    const flag = await User.find({ email: body.email });
+    if (flag) {
+      return res.status(400).json({
+        status: 'error',
+        msg: 'a user with that email already exists',
+      });
+    }
+
+    const newUser = new User(body);
+
+    bcrypt.genSalt(10, (err, salt) => {
+      if (err) throw err;
+      bcrypt.hash(newUser.password, salt, (err, hash) => {
+        if (err) throw err;
+        newUser.password = hash;
+        newUser.save()
+          .then((user) => {
+            jwt.sign(
+              { id: user._id },
+              process.env.jwtSecret,
+              { expiresIn: 3600 },
+              (err, token) => {
+                if (err) throw err;
+                return res.json({
+                  status: 'success',
+                  token,
+                  data: user,
+                });
+              },
+            );
+          });
+      });
+    });
+  } catch (err) {
     console.error(err);
     return (
       res.status(400).json({
         status: 'Error',
-        message: `Error logging in user`,
+        message: 'Error registering user',
         error: err,
-    }));
-
+      }));
   }
+};
 
-}
+exports.login = async (req, res) => {
+  try {
+    const { body } = req;
+    if (!body) {
+      return res.status(400).json({
+        status: 'error',
+        msg: "body can't be empty",
+      });
+    }
+    const valid = UserValidation.authValidation(body);
+    if (valid.error) {
+      return res.status(400).json({
+        status: 'error',
+        message: valid.error.details[0].message,
+      });
+    }
+
+    User.findOne({ email: body.email })
+      .then((user) => {
+        if (!user) {
+          return res.status(400).json({
+            status: 'error',
+            msg: 'user with that email does not exists',
+          });
+        }
+
+        // validate password
+        bcrypt.compare(body.password, user.password)
+          .then((match) => {
+            if (!match) {
+              return res.status(400).json({
+                status: 'error',
+                msg: 'wrong password',
+              });
+            }
+            jwt.sign(
+              { id: user._id },
+              process.env.jwtSecret,
+              { expiresIn: 3600 },
+              (err, token) => {
+                if (err) throw err;
+
+                res.json({
+                  status: 'success',
+                  token,
+                  data: user,
+                });
+              },
+            );
+          });
+      })
+      .catch((err) => console.log(err));
+  } catch (err) {
+    console.error(err);
+    return (
+      res.status(400).json({
+        status: 'Error',
+        message: 'Error logging in user',
+        error: err,
+      }));
+  }
+};

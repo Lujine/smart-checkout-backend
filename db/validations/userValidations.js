@@ -1,10 +1,44 @@
-//import createItemSchema from './storevalidations';
+// import createItemSchema from './storevalidations';
 
 const Joi = require('joi');
 
 const PASSWORD_REGEX = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,10}/;
 
+const createItemSchema = Joi.object().keys({
+  itemId: Joi.objectId().required(),
+  amount: Joi.number().integer().min(1).required(),
+});
+
+const createCartSchema = Joi.object().keys({
+  store: Joi.objectId(),
+  itemsSelected: Joi.array().items(
+    createItemSchema,
+  ).required(),
+  totalPrice: Joi.number().required(),
+});
+
+const updateItemSchema = Joi.object().keys({
+  itemId: Joi.objectId().required(),
+  amount: Joi.number().integer().min(1),
+});
+
+const updateCartSchema = Joi.object().keys({
+  store: Joi.objectId(),
+  itemsSelected: Joi.array().items(
+    updateItemSchema,
+  ),
+  totalPrice: Joi.number(),
+});
+
 module.exports = {
+  createCartItemValidation: (req) => {
+    const createSchema = createItemSchema;
+    return Joi.validate(req, createSchema);
+  },
+  createCartValidation: (req) => {
+    const createSchema = createCartSchema;
+    return Joi.validate(req, createSchema);
+  },
   createValidation: (req) => {
     const createSchema = {
       name: Joi.object().keys({
@@ -18,15 +52,17 @@ module.exports = {
       isAdmin: Joi.bool().required(),
       // need to make the day equal
       dateJoined: Joi.date().iso().required(),
-      shoppingCart: Joi.object().keys({
-        store: Joi.objectId(),
-        itemsSelected: Joi.array().items(
-          Joi.objectId(),
-        ),
-        totalPrice: Joi.number().required(),
-      }),
+      shoppingCart: createCartSchema,
     };
     return Joi.validate(req, createSchema);
+  },
+  updateCartItemValidation: (req) => {
+    const updateSchema = updateItemSchema;
+    return Joi.validate(req, updateSchema);
+  },
+  updateCartValidation: (req) => {
+    const updateSchema = updateCartSchema;
+    return Joi.validate(req, updateSchema);
   },
   updateValidation: (req) => {
     const updateSchema = {
@@ -41,13 +77,7 @@ module.exports = {
       isAdmin: Joi.bool(),
       // need to make the day equal
       dateJoined: Joi.date().iso(),
-      shoppingCart: Joi.object().keys({
-        store: Joi.objectId(),
-        itemsSelected: Joi.array().items(
-          Joi.objectId(),
-        ),
-        totalPrice: Joi.number(),
-      }),
+      shoppingCart: updateCartSchema,
     };
     return Joi.validate(req, updateSchema);
   },
