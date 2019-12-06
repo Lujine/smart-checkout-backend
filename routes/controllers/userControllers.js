@@ -398,12 +398,9 @@ exports.addItemToCart = async (req, res) => {
       });
     }
     const items = cart.itemsSelected;
-    items.splice(0, 0, data);
-    const newItem =  user.shoppingCart.itemsSelected[0];
-    console.log(newItem)
+    items.push(data);
 
-    // eslint-disable-next-line no-unused-expressions
-    newItem.isNew;
+    user.markModified('shoppingCart.itemsSelected');
     const saved = await user.save();
     if (saved.error) {
       return res.status(400).json({
@@ -446,9 +443,10 @@ exports.editItemInCart = async (req, res) => {
     const itemIndex = items.findIndex((selectedItem) => selectedItem.itemId === itemId);
     items[itemIndex] = data;
     const item = items[itemIndex];
-    // eslint-disable-next-line no-unused-expressions
-    item.isNew;
-    const saved = user.save;
+
+    user.markModified('shoppingCart.itemsSelected');
+    const saved = user.save();
+
     if (saved.error) {
       return res.status(400).json({
         status: 'Error',
@@ -457,7 +455,7 @@ exports.editItemInCart = async (req, res) => {
     }
     return res.status(200).json({
       status: 'Success',
-      data: item,
+      data: items,
     });
   } catch (err) {
     return res.status(400).json({
@@ -486,7 +484,16 @@ exports.deleteItemFromCart = async (req, res) => {
     }
     const items = cart.itemsSelected;
     const itemIndex = items.findIndex((selectedItem) => selectedItem.itemId === itemId);
-    items.splice(itemIndex);
+    items.splice(itemIndex, 1);
+
+    user.markModified('shoppingCart.itemsSelected')
+    const saved = await user.save();
+    if(saved.error) {
+      return res.status(400).json({
+        status: 'Error',
+        message: 'Error saving to DB',
+      });
+    }
     return res.status(200).json({
       status: 'Success',
       data: items,
