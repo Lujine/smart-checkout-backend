@@ -517,7 +517,6 @@ exports.register = async (req, res) => {
     }
     body.isAdmin = false;
     body.dateJoined = new Date().toISOString();
-    body.shoppingCart = { totalPrice: 0 };
     const valid = UserValidation.createValidation(body);
     if (valid.error) {
       return res.status(400).json({
