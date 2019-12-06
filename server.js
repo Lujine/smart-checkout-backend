@@ -5,7 +5,7 @@ const routes = require('./routes/routes');
 
 // Constants
 // eslint-disable-next-line no-bitwise
-const PORT = process.env.PORT | 8080;
+const PORT = process.env.NODE_ENV === 'production' ? process.env.PORT : 8080;
 // eslint-disable-next-line prefer-destructuring
 const db = process.env.DB_URI;
 
