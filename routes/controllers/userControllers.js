@@ -524,7 +524,7 @@ exports.register = async (req, res) => {
         message: valid.error.details[0].message,
       });
     }
-    const flag = await User.find({ email: body.email });
+    const flag = await User.findOne({ email: body.email });
     if (flag) {
       return res.status(400).json({
         status: 'error',
