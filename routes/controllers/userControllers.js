@@ -524,13 +524,14 @@ exports.register = async (req, res) => {
         message: valid.error.details[0].message,
       });
     }
-    const flag = await User.findOne({ email: body.email });
-    if (flag) {
-      return res.status(400).json({
-        status: 'error',
-        msg: 'a user with that email already exists',
-      });
-    }
+    User.findOne({ email: body.email })
+      .then((user) => {
+        if (user) {
+          return res.status(400).json({
+            status: 'error',
+            msg: 'a user with that email already exists',
+          });
+      }
 
     const newUser = new User(body);
 
