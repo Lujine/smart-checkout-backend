@@ -46,8 +46,15 @@ const UserSchema = new Schema({
       },
       itemsSelected: {
         type: [{
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Store.items',
+          itemId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Store.items',
+            required: true,
+          },
+          amount: {
+            type: Number,
+            required: true,
+          },
         }],
         required: true,
       },
