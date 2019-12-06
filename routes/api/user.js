@@ -24,6 +24,6 @@ router.get('/:userId/cart/item', controller.getAllItemsInCart);
 router.get('/:userId/cart/item/:itemId', controller.getItemInCart);
 router.post('/:userId/cart/item', controller.addItemToCart);
 router.put('/:userId/cart/item/:itemId', controller.editItemInCart);
-router.delete('/:userId/cart/item/:cartId', controller.deleteItemFromCart);
+router.delete('/:userId/cart/item/:itemId', controller.deleteItemFromCart);
 
 module.exports = router;
