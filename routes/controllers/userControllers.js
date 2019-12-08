@@ -492,7 +492,6 @@ exports.deleteItemFromCart = async (req, res) => {
     user.shoppingCart.totalPrice-=items[itemIndex].price
     if(user.shoppingCart.totalPrice<=0)
     {
-      console.log('leek floos')
       user.shoppingCart.totalPrice=0
     }
     items.splice(itemIndex, 1);
