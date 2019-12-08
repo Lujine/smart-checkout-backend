@@ -401,9 +401,6 @@ exports.addItemToCart = async (req, res) => {
     const items = cart.itemsSelected;
     items.push(data);
     user.shoppingCart.totalPrice+=data.price;
-    console.log("test test")
-    console.log(user.shoppingCart)
-
     user.markModified('shoppingCart.itemsSelected');
     user.markModified('shoppingCart.totalPrice');
     
