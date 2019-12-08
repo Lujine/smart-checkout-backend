@@ -257,9 +257,10 @@ exports.deleteCart = async (req, res) => {
   const { userId } = req.params;
   const data = {
     totalPrice: 0,
+    itemsSelected:[]
   };
 
-  const validated = UserValidation.createcartValidation(data);
+  const validated = UserValidation.createCartValidation(data);
   if (validated.error) {
     return res.status(400).json({
       status: 'Validation Error',
