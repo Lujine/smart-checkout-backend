@@ -532,6 +532,7 @@ exports.register = async (req, res) => {
             msg: 'a user with that email already exists',
           });
       }
+    })
 
     const newUser = new User(body);
 
