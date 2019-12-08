@@ -488,10 +488,18 @@ exports.deleteItemFromCart = async (req, res) => {
       });
     }
     const items = cart.itemsSelected;
-    const itemIndex = items.findIndex((selectedItem) => selectedItem.itemId === itemId);
+    const itemIndex = items.findIndex((selectedItem) => selectedItem._id === itemId);
+    console.log(itemIndex)
+    console.log(items[itemIndex])
+    user.shoppingCart.totalPrice-=items[itemIndex].price
+    if(user.shoppingCart.totalPrice<=0)
+    {
+      console.log('leek floos')
+      user.shoppingCart.totalPrice=0
+    }
     items.splice(itemIndex, 1);
-
     user.markModified('shoppingCart.itemsSelected')
+    user.markModified('shoppingCart.totalPrice')
     const saved = await user.save();
     if(saved.error) {
       return res.status(400).json({
