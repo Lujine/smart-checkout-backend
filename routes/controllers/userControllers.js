@@ -525,8 +525,15 @@ exports.register = async (req, res) => {
         msg: "body can't be empty",
       });
     }
-    body.isAdmin = false;
+    if(!body.isAdmin)
+      body.isAdmin = false;
     body.dateJoined = new Date().toISOString();
+    const birthdate = new Date(body.birthdate);
+    const cur = new Date();
+    const diff = cur-birthdate; 
+    const age = Math.floor(diff/31557600000);
+    body.age = age; 
+    console.log(body.age);
     const valid = UserValidation.createValidation(body);
     if (valid.error) {
       return res.status(400).json({
