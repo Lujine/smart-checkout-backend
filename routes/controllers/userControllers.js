@@ -400,7 +400,7 @@ exports.addItemToCart = async (req, res) => {
     }
     const items = cart.itemsSelected;
     items.push(data);
-    user.shoppingCart.totalPrice+=data.price;
+    user.shoppingCart.totalPrice+=data.price*(1-(data.discount/100));
     user.markModified('shoppingCart.itemsSelected');
     user.markModified('shoppingCart.totalPrice');
     
@@ -489,7 +489,7 @@ exports.deleteItemFromCart = async (req, res) => {
     const itemIndex = items.findIndex((selectedItem) => selectedItem._id === itemId);
     console.log(itemIndex)
     console.log(items[itemIndex])
-    user.shoppingCart.totalPrice-=items[itemIndex].price
+    user.shoppingCart.totalPrice-=items[itemIndex].price*(1-(items[itemIndex].discount/100))
     if(user.shoppingCart.totalPrice<=0)
     {
       user.shoppingCart.totalPrice=0
