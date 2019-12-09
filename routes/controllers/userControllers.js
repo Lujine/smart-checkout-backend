@@ -257,9 +257,10 @@ exports.deleteCart = async (req, res) => {
   const { userId } = req.params;
   const data = {
     totalPrice: 0,
+    itemsSelected:[]
   };
 
-  const validated = UserValidation.createcartValidation(data);
+  const validated = UserValidation.createCartValidation(data);
   if (validated.error) {
     return res.status(400).json({
       status: 'Validation Error',
@@ -399,8 +400,10 @@ exports.addItemToCart = async (req, res) => {
     }
     const items = cart.itemsSelected;
     items.push(data);
-
+    user.shoppingCart.totalPrice+=data.price*(1-(data.discount/100));
     user.markModified('shoppingCart.itemsSelected');
+    user.markModified('shoppingCart.totalPrice');
+    
     const saved = await user.save();
     if (saved.error) {
       return res.status(400).json({
@@ -483,10 +486,17 @@ exports.deleteItemFromCart = async (req, res) => {
       });
     }
     const items = cart.itemsSelected;
-    const itemIndex = items.findIndex((selectedItem) => selectedItem.itemId === itemId);
+    const itemIndex = items.findIndex((selectedItem) => selectedItem._id === itemId);
+    console.log(itemIndex)
+    console.log(items[itemIndex])
+    user.shoppingCart.totalPrice-=items[itemIndex].price*(1-(items[itemIndex].discount/100))
+    if(user.shoppingCart.totalPrice<=0)
+    {
+      user.shoppingCart.totalPrice=0
+    }
     items.splice(itemIndex, 1);
-
     user.markModified('shoppingCart.itemsSelected')
+    user.markModified('shoppingCart.totalPrice')
     const saved = await user.save();
     if(saved.error) {
       return res.status(400).json({
@@ -515,8 +525,15 @@ exports.register = async (req, res) => {
         msg: "body can't be empty",
       });
     }
-    body.isAdmin = false;
+    if(!body.isAdmin)
+      body.isAdmin = false;
     body.dateJoined = new Date().toISOString();
+    const birthdate = new Date(body.birthdate);
+    const cur = new Date();
+    const diff = cur-birthdate; 
+    const age = Math.floor(diff/31557600000);
+    body.age = age; 
+    console.log(body.age);
     const valid = UserValidation.createValidation(body);
     if (valid.error) {
       return res.status(400).json({
@@ -532,6 +549,7 @@ exports.register = async (req, res) => {
             msg: 'a user with that email already exists',
           });
       }
+    })
 
     const newUser = new User(body);
 
