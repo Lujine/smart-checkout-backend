@@ -1,6 +1,6 @@
 # smart-checkout-backend
 
-Smart Checkout is a mobile app that allows users to self-checkout from supermarkets without having to stand in long queues. This is the backend of the application, check (https://github.com/Lujine/smart-checkout-frontend "Frontend application repo") for the frontend application done with react native.
+Smart Checkout is a mobile app that allows users to self-checkout from supermarkets without having to stand in long queues. This is the backend of the application, check the [Frontend Repo](https://github.com/Lujine/smart-checkout-frontend "Frontend application repo") of the application done with react native.
 
 ### Built With
 - Node.JS
@@ -66,7 +66,7 @@ docker-compose up
 ```
 
 ## Deployment
-- The backend is deployed on https://smartcheckoutbackend.herokuapp.com, you can send your requests to the url straight away
+- The backend is deployed on [smart checkout backend](https://smartcheckoutbackend.herokuapp.com "Smart Checkout Backend"), you can send your requests to the url straight away
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
