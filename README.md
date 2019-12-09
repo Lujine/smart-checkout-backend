@@ -61,7 +61,6 @@ curl -i localhost:8080
 ### Using Docker Compose
 commands to run
 ```
-docker-compose start
 docker-compose up
 ```
 
